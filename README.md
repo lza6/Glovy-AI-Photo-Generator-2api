@@ -1,3 +1,7 @@
+![status](https://img.shields.io/badge/status-first--round%20delivered-brightgreen)
+![images](https://img.shields.io/badge/ability-11%20image%20ops%20%2B%20t2i%2Fi2i%2Fi2v-blue)
+![python](https://img.shields.io/badge/python-3.11%2B-3776AB)
+
 # Glovy AI Photo Generator → 2API（第一轮）
 
 把 `Glovy – AI Photo Generator 1.9.0`（`com.aiphotogenerator.aivideomaker.photoslideshow`）的
