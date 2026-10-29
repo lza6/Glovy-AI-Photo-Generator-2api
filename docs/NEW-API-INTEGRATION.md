@@ -44,7 +44,7 @@ python server.py
 
 ```powershell
 curl http://127.0.0.1:8956/health        # {"ok":true,"mock":false,"styles":3826,...}
-curl http://127.0.0.1:8956/v1/models     # 16 个模型（4 基础 + 11 处理能力 + 视频）
+curl http://127.0.0.1:8956/v1/models     # 15 个模型（3 基础 + 11 处理 + 视频）
 curl http://127.0.0.1:8956/api/v1/operations   # 11 项能力清单与必填输入
 ```
 

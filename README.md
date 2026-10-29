@@ -6,6 +6,24 @@ Apero 系上游协议还原成本地 OpenAI 兼容网关。
 - 逆向报告（端点全表 / 签名 / 凭据链 / 坑）：[`docs/REVERSE-REPORT.md`](docs/REVERSE-REPORT.md)
 - new-api 对接指南：[`docs/NEW-API-INTEGRATION.md`](docs/NEW-API-INTEGRATION.md)
 
+## 演示页截图
+
+| 首屏 + 风格库 | 风格化出图 |
+|---|---|
+| ![idle](shots/demo_idle.png) | ![result](shots/demo_result.png) |
+
+| 选风格 | 图像处理能力（enhance） |
+|---|---|
+| ![style](shots/demo_style.png) | ![op](shots/demo_op_enhance.png) |
+
+## 效果样例
+
+| 输入（真人照） | Ghibi 风格化输出 |
+|---|---|
+| ![in](https://img.shields.io/badge/input-in1.jpg-informational) | ![out](https://img.shields.io/badge/output-848x848_JPEG-success) |
+
+图生视频（`mode=i2v`）：h264 / 704×704 / 121 帧 / 5.04 s / 927 KB → `out_video.mp4`
+
 ## 能力（全部实测打通）
 
 | 能力 | 端点 | 实测 |
