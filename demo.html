@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Glovy AI Photo Generator · 2API Demo</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#141821; --panel2:#1b2130; --line:#252c3c;
+    --txt:#e8ecf5; --dim:#8b95ab; --acc:#4c8dff; --acc2:#22c55e; --warn:#f59e0b; --err:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#070910,#0b0d12 60%);color:var(--txt);
+       font:14px/1.55 -apple-system,"Segoe UI",Roboto,"Noto Sans SC",sans-serif}
+  header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  h1{font-size:17px;margin:0;font-weight:600}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#1d2a45;color:#9db8ff;border:1px solid #2b3d63}
+  .badge.mock{background:#3a2a10;color:#f7c56b;border-color:#5a4118}
+  .spacer{flex:1}
+  .stat{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .stat b{color:var(--txt)}
+  main{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px 24px 40px;align-items:start}
+  @media(max-width:980px){main{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h2{font-size:13px;margin:0 0 12px;color:var(--dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  label{display:block;font-size:12px;color:var(--dim);margin:10px 0 5px}
+  input[type=text],textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);
+       color:var(--txt);border-radius:8px;padding:9px 11px;font:inherit;outline:none}
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--acc)}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+  button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 14px;font:inherit;
+         font-weight:600;cursor:pointer}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  button.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-weight:500}
+  #drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--dim);
+        cursor:pointer;transition:.15s}
+  #drop.hover,#drop:hover{border-color:var(--acc);color:var(--txt)}
+  #preview{max-width:100%;max-height:180px;border-radius:8px;margin-top:10px;display:none}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .card img{width:100%;display:block;aspect-ratio:1/1;object-fit:cover;background:#0e1118}
+  .card .meta{padding:8px 10px;font-size:11px;color:var(--dim);display:flex;justify-content:space-between;gap:6px}
+  .card .meta b{color:var(--acc2);font-variant-numeric:tabular-nums}
+  .card.err{border-color:#5a2222}
+  .card.err .meta b{color:var(--err)}
+  .empty{color:var(--dim);font-size:13px;padding:40px 0;text-align:center}
+  .styles{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-height:280px;overflow:auto;
+          margin-top:8px;padding-right:4px}
+  .style{border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;background:#0e1118}
+  .style img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+  .style.sel{border-color:var(--acc);box-shadow:0 0 0 2px rgba(76,141,255,.25)}
+  .style .nm{position:absolute;left:0;right:0;bottom:0;font-size:9px;padding:2px 4px;background:rgba(0,0,0,.62);
+             color:#dfe6f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tabs{display:flex;gap:6px;margin-bottom:10px}
+  .tabs button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-weight:500;padding:8px}
+  .tabs button.on{background:#20304d;color:#cfe0ff;border-color:#365a99}
+  .hint{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5}
+  .log{max-height:120px;overflow:auto;font:11px/1.5 ui-monospace,Consolas,monospace;color:var(--dim);margin-top:8px;
+       background:#0e1118;border:1px solid var(--line);border-radius:8px;padding:8px}
+  .log .e{color:var(--err)}
+  .log .s{color:var(--acc2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Glovy AI Photo Generator</h1>
+  <span class="badge" id="modeBadge">…</span>
+  <span class="badge">apero gateway · flux-klein</span>
+  <span class="spacer"></span>
+  <span class="stat">请求 <b id="sReq">0</b></span>
+  <span class="stat">成功 <b id="sOk">0</b></span>
+  <span class="stat">失败 <b id="sFail">0</b></span>
+  <span class="stat">p50 <b id="sP50">-</b>ms</span>
+  <span class="stat">p95 <b id="sP95">-</b>ms</span>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="tabs">
+      <button id="tabI2I" class="on">图生图 / 风格化</button>
+      <button id="tabT2I">文生图</button>
+    </div>
+
+    <div id="paneI2I">
+      <div id="drop">点击或拖拽图片到此处<br><span style="font-size:11px">jpg / png，≤12MB</span></div>
+      <input type="file" id="file" accept="image/*" hidden />
+      <img id="preview" alt="预览" />
+    </div>
+
+    <label id="promptLabel">提示词（可选）</label>
+    <textarea id="prompt" placeholder="例如：a cinematic portrait, soft rim light"></textarea>
+
+    <label>图像处理（可选，实测已打通的能力）</label>
+    <select id="op">
+      <option value="">— 不选：图生图 / 风格化（flux-klein）—</option>
+      <option value="enhance">画质增强 enhance</option>
+      <option value="restore">老照片修复 restore</option>
+      <option value="outpaint">扩图 outpaint</option>
+      <option value="remove-bg">抠背景 remove-bg</option>
+      <option value="qwen-edit">自然语言编辑 qwen-edit</option>
+      <option value="beauty">人像美颜 beauty</option>
+      <option value="clothes">AI 换装 clothes</option>
+      <option value="segment">图像分割 segment</option>
+      <option value="remove-object">去物体 remove-object（需蒙版）</option>
+      <option value="inpainting">局部重绘 inpainting（需蒙版）</option>
+    </select>
+    <div id="maskRow" style="display:none">
+      <label>蒙版图（去物体 / 局部重绘必填，白色区域为处理区）</label>
+      <input type="file" id="maskFile" accept="image/*" />
+    </div>
+
+    <div id="t2iRow" class="row" style="display:none">
+      <div><label>宽</label><input type="text" id="w" value="768" /></div>
+      <div><label>高</label><input type="text" id="h" value="768" /></div>
+    </div>
+
+    <label>风格（可选，来自 style-manager 3826 条）</label>
+    <input type="text" id="styleSearch" placeholder="搜索风格名，如 anime / ghibli / wedding" />
+    <div class="styles" id="styleList"></div>
+    <div class="hint" id="styleHint">未选风格 = 通用图生图（flux-klein-editing）</div>
+
+    <div class="row" style="margin-top:14px">
+      <button id="go">开始生成</button>
+      <button id="clear" class="ghost" style="flex:0 0 88px">清空</button>
+    </div>
+    <div class="hint">上游同步返回，通常 8–30s；失败会自动重试 1 次。</div>
+    <div class="log" id="log"></div>
+  </section>
+
+  <section class="panel">
+    <h2>结果</h2>
+    <div class="gallery" id="gallery"></div>
+    <div class="empty" id="empty">还没有结果，右侧选好参数后点「开始生成」</div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let MODE = 'i2i', FILE = null, STYLE = null, STYLES = [];
+
+async function jget(u){ const r = await fetch(u); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+function log(msg, cls=''){ const d=document.createElement('div'); d.className=cls; d.textContent=msg;
+  $('log').appendChild(d); $('log').scrollTop = 1e9; if($('log').childNodes.length>60) $('log').firstChild.remove(); }
+
+async function refreshStats(){
+  try{
+    const s = await jget('/stats');
+    $('sReq').textContent=s.requests; $('sOk').textContent=s.ok; $('sFail').textContent=s.fail;
+    $('sP50').textContent=s.p50_ms||'-'; $('sP95').textContent=s.p95_ms||'-';
+  }catch(e){}
+}
+async function boot(){
+  try{
+    const h = await jget('/health'); $('modeBadge').textContent = h.mock ? 'MOCK 模式' : `LIVE · ${h.styles} 风格`;
+    if(h.mock) $('modeBadge').classList.add('mock');
+  }catch(e){ $('modeBadge').textContent='离线'; }
+  refreshStats(); setInterval(refreshStats, 3000);
+  loadStyles('');
+}
+async function loadStyles(q){
+  try{
+    const d = await jget('/styles?limit=120' + (q? '&q='+encodeURIComponent(q):''));
+    STYLES = d.items; renderStyles();
+    $('styleHint').textContent = `匹配 ${d.count} 条 · 显示 ${d.items.length} 条`;
+  }catch(e){ log('风格加载失败 '+e.message,'e'); }
+}
+function renderStyles(){
+  const box=$('styleList'); box.innerHTML='';
+  if(!STYLES.length){ box.innerHTML='<div class="hint">无匹配风格</div>'; return; }
+  STYLES.forEach(s=>{
+    const d=document.createElement('div'); d.className='style'+(STYLE&&STYLE.id===s.id?' sel':'');
+    d.title = s.name + (s.project? ' · '+s.project : '');
+    d.innerHTML = `<img loading="lazy" src="${s.thumbnail||''}" onerror="this.style.opacity=.15" /><div class="nm">${s.name||''}</div>`;
+    d.onclick = ()=>{ STYLE = (STYLE&&STYLE.id===s.id)? null : s; renderStyles();
+      $('styleHint').textContent = STYLE ? `已选：${STYLE.name}（${STYLE.id}）` : '未选风格 = 通用图生图';
+      if(STYLE && STYLE.prompt && !$('prompt').value) $('prompt').value = STYLE.prompt; };
+    box.appendChild(d);
+  });
+}
+
+$('tabI2I').onclick=()=>{ MODE='i2i'; $('tabI2I').classList.add('on'); $('tabT2I').classList.remove('on');
+  $('paneI2I').style.display=''; $('t2iRow').style.display='none'; };
+$('tabT2I').onclick=()=>{ MODE='t2i'; $('tabT2I').classList.add('on'); $('tabI2I').classList.remove('on');
+  $('paneI2I').style.display='none'; $('t2iRow').style.display='flex'; };
+
+const drop=$('drop'), fileInput=$('file');
+drop.onclick=()=>fileInput.click();
+drop.ondragover=(e)=>{e.preventDefault();drop.classList.add('hover');};
+drop.ondragleave=()=>drop.classList.remove('hover');
+drop.ondrop=(e)=>{e.preventDefault();drop.classList.remove('hover'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);};
+fileInput.onchange=(e)=>{ if(e.target.files[0]) setFile(e.target.files[0]); };
+function setFile(f){
+  if(!f.type.startsWith('image/')) return alert('请选择图片文件');
+  if(f.size > 12*1024*1024) return alert('图片超过 12MB');
+  FILE=f; const p=$('preview'); p.src=URL.createObjectURL(f); p.style.display='block';
+  drop.textContent = `${f.name} · ${(f.size/1024).toFixed(0)}KB`;
+}
+$('styleSearch').oninput=(e)=>loadStyles(e.target.value.trim());
+$('op').onchange=(e)=>{
+  const v=e.target.value;
+  $('maskRow').style.display = (v==='remove-object'||v==='inpainting') ? 'block' : 'none';
+};
+$('clear').onclick=()=>{ FILE=null; STYLE=null; $('prompt').value=''; $('preview').style.display='none';
+  $('file').value=''; drop.textContent='点击或拖拽图片到此处'; renderStyles(); };
+
+async function once(){
+  let url, opts;
+  const opName = $('op').value;
+  if(opName){
+    if(!FILE) throw new Error('请先选择图片');
+    const fd = new FormData();
+    fd.append('image', FILE);
+    if($('prompt').value.trim()) fd.append('prompt', $('prompt').value.trim());
+    const mk = $('maskFile').files[0];
+    if(mk) fd.append('mask', mk);
+    url='/api/v1/op/'+opName; opts={method:'POST', body:fd};
+  }else if(MODE==='i2i'){
+    if(!FILE) throw new Error('请先选择图片');
+    const fd = new FormData();
+    fd.append('image', FILE);
+    if($('prompt').value.trim()) fd.append('prompt', $('prompt').value.trim());
+    if(STYLE) fd.append('style_id', STYLE.id);
+    url='/api/v1/generate'; opts={method:'POST', body:fd};
+  }else{
+    const body={prompt:$('prompt').value.trim()||'a beautiful portrait photo',
+                width:parseInt($('w').value)||768, height:parseInt($('h').value)||768};
+    if(STYLE) body.style_id = STYLE.id;
+    url='/api/v1/text2image'; opts={method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)};
+  }
+  const r = await fetch(url, opts);
+  if(!r.ok) throw new Error((await r.text()).slice(0,300));
+  return r.json();
+}
+
+$('go').onclick=async ()=>{
+  $('go').disabled=true; $('empty').style.display='none';
+  const t0=performance.now();
+  let out, err=null;
+  for(let i=0;i<2;i++){
+    try{ out = await once(); break; }catch(e){ err=e; log(`第${i+1}次失败: ${e.message}`,'e'); if(i===0) await new Promise(r=>setTimeout(r,800)); }
+  }
+  const ms = Math.round(performance.now()-t0);
+  if(!out){
+    const c=document.createElement('div'); c.className='card err';
+    c.innerHTML=`<div style="padding:24px;text-align:center;color:#ef4444;font-size:12px">失败</div>
+      <div class="meta"><span>${err?err.message.slice(0,60):''}</span><b>${ms}ms</b></div>`;
+    $('gallery').prepend(c);
+  }else{
+    const src = out.url.startsWith('http') && !out.url.includes('mock.local')
+      ? '/media?url='+encodeURIComponent(out.url) : out.url;
+    const c=document.createElement('div'); c.className='card';
+    const label = $('op').value ? $('op').value : ((STYLE&&STYLE.name)||MODE);
+    c.innerHTML=`<a href="${src}" target="_blank"><img src="${src}" /></a>
+      <div class="meta"><span>${label}</span><b>${out.elapsed_ms||ms}ms</b></div>`;
+    $('gallery').prepend(c);
+    log(`成功 ${out.elapsed_ms||ms}ms · ${out.url? out.url.split('/').pop().slice(0,28):''}`,'s');
+  }
+  $('go').disabled=false; refreshStats();
+};
+
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "mode": "real",
+  "kind": "i2i",
+  "total": 6,
+  "concurrency": 2,
+  "ok": 6,
+  "fail": 0,
+  "success_rate": 100.0,
+  "wall_s": 32.94,
+  "rps": 0.18,
+  "p50_ms": 8011.9,
+  "p90_ms": 10588.7,
+  "p95_ms": 14336.2,
+  "mean_ms": 9818.1,
+  "min_ms": 7748.9,
+  "max_ms": 14336.2,
+  "errors": [],
+  "sample_url": "https://static.aperogroup.ai/ai-core-flux-klein-editing/20261029/be552959-0503-4af8-9c4f-3ae01834e547/output/1793287135176_0.jpeg"
+}

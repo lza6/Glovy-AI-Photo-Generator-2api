@@ -1,0 +1,19 @@
+{
+  "mode": "mock",
+  "kind": "t2i",
+  "total": 300,
+  "concurrency": 30,
+  "ok": 300,
+  "fail": 0,
+  "success_rate": 100.0,
+  "wall_s": 0.92,
+  "rps": 326.7,
+  "p50_ms": 88.9,
+  "p90_ms": 98.0,
+  "p95_ms": 100.8,
+  "mean_ms": 86.1,
+  "min_ms": 57.3,
+  "max_ms": 110.0,
+  "errors": [],
+  "sample_url": "https://mock.local/t2i/4cc95c11d0da4629a2aa656ebbd17442.jpeg"
+}

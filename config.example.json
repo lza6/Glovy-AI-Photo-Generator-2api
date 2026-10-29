@@ -1,0 +1,4 @@
+{
+  "api_key": "sk-<在此填入 Apero 网关租户 key>",
+  "_note": "优先用环境变量 APERO_API_KEY；key 可用 python fetch_rc.py --app <app> 从 Firebase Remote Config 现取"
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "real",
+  "kind": "t2i",
+  "total": 8,
+  "concurrency": 2,
+  "ok": 8,
+  "fail": 0,
+  "success_rate": 100.0,
+  "wall_s": 27.31,
+  "rps": 0.29,
+  "p50_ms": 6433.7,
+  "p90_ms": 6726.8,
+  "p95_ms": 8559.7,
+  "mean_ms": 6463.9,
+  "min_ms": 5191.8,
+  "max_ms": 8559.7,
+  "errors": [],
+  "sample_url": "https://static.aperogroup.ai/ai-core-flux-klein-editing/text2image/20261029/e4466edb-480c-422d-9ceb-6d2b94cec7df/output/f2f60ca1-9457-4bca-bc6d-02828225f46c/output/1793287090154_0.jpeg"
+}
